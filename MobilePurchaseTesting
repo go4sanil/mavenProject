@@ -1,0 +1,153 @@
+package com.sanil.learningSelenium;
+
+import java.util.concurrent.TimeUnit;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.Select;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
+
+public class MobilePurchaseTesting {
+	WebDriver wd;
+
+	@BeforeMethod
+	public void setUp() {
+
+		System.setProperty("webdriver.chrome.driver", "/home/sanil/Desktop/chromedriver");
+
+		wd = new ChromeDriver();
+		wd.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+
+		wd.get("https://naveenautomationlabs.com/opencart/index.php?route=account/login");
+
+	}
+
+	@Test
+	public void verifyLoginTest() throws InterruptedException {
+		SoftAssert sf = new SoftAssert();
+		wd.manage().window().maximize();
+		// ----login page--------//
+		wd.findElement(By.cssSelector("[name ='email']")).sendKeys("testemail@email.com");
+		wd.findElement(By.cssSelector("[name ='password']")).sendKeys("12345");
+		wd.findElement(By.cssSelector("input[value='Login']")).click();
+		// --------My Account page--------------------------------------------------------------------
+	
+		sf.assertEquals(wd.getTitle(),"My Account", "Page Title not captured correctly");
+
+		// -----------Product page----------------------------------------------------------------
+
+		wd.get("https://naveenautomationlabs.com/opencart/index.php?route=product/category&path=20_27");
+
+		sf.assertEquals(wd.getTitle(), "Mac", "Expected Mac, Tilte not identified");
+		wd.findElement(By.cssSelector("#content>div:nth-of-type(2)>div:nth-of-type(1)>div>div:nth-of-type(2)>div>h4 a"))
+				.click();
+		wd.findElement(By.cssSelector("button[id='button-cart']")).click();
+
+		// Cart
+		WebElement addToCart = wd.findElement(By.cssSelector("span[id ='cart-total']"));
+		String addToCarttext = addToCart.getText();
+		sf.assertEquals(addToCarttext, "1 item(s) - $122.00", "Items price not matching");
+		addToCart.click();
+
+		// Check out link - child page
+		wd.findElement(By.cssSelector("p[class='text-right'] a:last-of-type")).click();
+
+		// ----------Billing Details Page-----------------------------------------
+		// I want to use a new address text box
+		wd.findElement(By.cssSelector("input[value='new']")).click();
+
+		// ----------Billing Details Page-----------------------------------------
+		// Form
+		wd.findElement(By.cssSelector("input[name='firstname']")).sendKeys("FirstName");
+		wd.findElement(By.cssSelector("input[name='lastname']")).sendKeys("SecondName");
+		wd.findElement(By.cssSelector("input[name='company']")).sendKeys("Company");
+		wd.findElement(By.cssSelector("input[name='address_1']")).sendKeys("AddreesLine1");
+		wd.findElement(By.cssSelector("input[name='address_2']")).sendKeys("AddreesLine2");
+		wd.findElement(By.cssSelector("input[name='city']")).sendKeys("City");
+		wd.findElement(By.cssSelector("input[name='postcode']")).sendKeys("N1w2RT");
+		selectElementByVisibleText(wd.findElement(By.cssSelector("select[name='country_id']")), "Canada");
+		selectElementByVisibleText(wd.findElement(By.cssSelector("select[name='zone_id']")), "Alberta");
+		// Continue Button
+		wd.findElement(By.cssSelector("input[id='button-payment-address']")).click();
+
+		// ----------Delivery Details Page-----------------------------------------
+		// Cash on Delivery - radio button
+		if (!wd.findElement(By.cssSelector(
+				"div[id='accordion']>div:nth-of-type(3)>div:nth-of-type(2)>div>form>div:nth-of-type(1)>label>input"))
+				.isSelected()) {
+			wd.findElement(By.cssSelector(
+					"div[id='accordion']>div:nth-of-type(3)>div:nth-of-type(2)>div>form>div:nth-of-type(1)>label>input"))
+					.click();
+		}
+
+		sf.assertTrue(wd.findElement(By.cssSelector(
+				"div[id='accordion']>div:nth-of-type(3)>div:nth-of-type(2)>div>form>div:nth-of-type(1)>label>input"))
+				.isSelected());
+		// Continue Button
+		wd.findElement(By.cssSelector("input[id='button-shipping-address']")).click();
+
+		// ----------Delivery Method Page-----------------------------------------
+		// Flat Rate - radio button
+
+		sf.assertTrue(wd.findElement(By.cssSelector("input[value='flat.flat']")).isSelected());
+		// Add comments about the order - text box
+		wd.findElement(By.cssSelector("textarea[name='comment']")).sendKeys("NA");
+		// continue button
+		wd.findElement(By.cssSelector("input[id='button-shipping-method']")).click();
+
+		// ----------Payment Method Page-----------------------------------------
+		// Cash on Delivery - radio button
+		if (!wd.findElement(By.cssSelector("input[name='payment_method']")).isSelected()) {
+			wd.findElement(By.cssSelector("input[name='payment_method']")).click();
+		}
+
+		// Terms and condition check box
+		if (!wd.findElement(By.cssSelector("input[type='checkbox']")).isSelected()) {
+			wd.findElement(By.cssSelector("input[type='checkbox']")).click();
+		}
+		// continue button
+		wd.findElement(By.cssSelector("input[id='button-payment-method']")).click();
+
+		// ----------Confirm Order Page-----------------------------------------
+		// Product Quantity Page
+		WebElement productNameField = wd.findElement(By.cssSelector(".table-responsive a"));
+		sf.assertEquals(productNameField.getText(), "iMac", " Product Name Text does not match");
+		// Product Quantity Page
+		WebElement productQuantityField = wd
+				.findElement(By.cssSelector(".table-responsive tbody>tr>td:nth-of-type(3)"));
+		sf.assertEquals(productQuantityField.getText(), "1", "Product Quantity Text does not match");
+		// Confirm order submit button
+		WebElement confrimOrderButton = wd.findElement(By.cssSelector("input[value='Confirm Order']"));
+		confrimOrderButton.click();
+		
+		// ----------Your order has been placed!Page-------------------------------
+		WebElement orderplacedTextElement = wd.findElement(By.cssSelector("#content h1"));
+		sf.assertEquals(orderplacedTextElement.getText(), "Your order has been placed!", "Text does not match");
+		wd.manage().window().minimize();
+		// -----------------------------------------------------------------------------
+
+		sf.assertAll();
+		
+
+	}
+
+	@AfterMethod
+	public void tearDown() {
+
+		wd.close();
+	}
+
+	public void selectElementByVisibleText(WebElement element, String text) {
+		Select sc = new Select(element);
+		sc.selectByVisibleText(text);
+	}
+
+	public void selectElementByIndex(WebElement element, int index) {
+		Select sc = new Select(element);
+		sc.selectByIndex(index);
+	}
+}
