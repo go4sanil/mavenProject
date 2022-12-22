@@ -1,0 +1,87 @@
+package com.sanilassignments;
+
+import java.time.Duration;
+import java.util.Set;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
+
+public class MouseOverExercise {
+	WebDriver wd;
+	WebDriverWait wdWait;
+	Actions action;
+
+	@BeforeMethod
+	public void setUp() {
+		System.setProperty("webdriver.chrome.driver", "/home/sanil/Desktop/chromedriver");
+		wd = new ChromeDriver();
+		wdWait = new WebDriverWait(wd, Duration.ofSeconds(10));
+		action = new Actions(wd);
+		wd.get("http://seleniumpractise.blogspot.com/2016/08/how-to-perform-mouse-hover-in-selenium.html");
+		wd.manage().window().maximize();
+	}
+
+	@Test
+	public void verifyLoginTest() throws InterruptedException {
+		SoftAssert sf = new SoftAssert();
+		Set<String> originalWindowHandles = wd.getWindowHandles();
+		Set<String> currentWindowHandles = null;
+		wdWait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.dropbtn")));
+		String parentWindowHandle = wd.getWindowHandle();
+		WebElement automationToolButton = wd.findElement(By.cssSelector("button.dropbtn"));
+		WebElement seleniumLink = wd.findElement(By.cssSelector("div.dropdown-content>a:first-of-type"));
+		WebElement testNGLink = wd.findElement(By.cssSelector("div.dropdown-content>a:nth-of-type(2)"));
+		WebElement appiumLink = wd.findElement(By.cssSelector("div.dropdown-content>a:last-of-type"));
+		action.moveToElement(automationToolButton).build().perform();
+		action.moveToElement(seleniumLink).click().build().perform();
+		Set<String> allWindowHandles = wd.getWindowHandles();
+
+		windowHandling(currentWindowHandles, originalWindowHandles);
+		sf.assertEquals(wd.getTitle(), "Selenium Webdriver Tutorial - Selenium Tutorial for Beginners",
+				"User is not signed in");
+		Set<String> newallWindowHandles = wd.getWindowHandles();
+		wd.switchTo().window(parentWindowHandle);
+		wdWait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.dropbtn")));
+		action.moveToElement(automationToolButton).build().perform();
+		action.moveToElement(testNGLink).click().build().perform();
+		sf.assertEquals(wd.getTitle(), "TestNG Tutorials for Selenium Webdriver with Real Time Examples",
+				"User is not signed in");
+		wd.navigate().back();
+		Thread.sleep(2000);
+		wdWait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.dropbtn")));
+		action.moveToElement(automationToolButton).build().perform();
+		action.moveToElement(appiumLink).click().build().perform();
+		sf.assertEquals(wd.getTitle(), "Complete Ultimate Appium tutorial for beginners using JAVA for Selenium",
+				"User is not signed in");
+		sf.assertAll();
+
+	}
+
+	public void windowHandling(Set<String> currentwindowHandles, Set<String> originalwindowHandles) {
+
+		currentwindowHandles = wd.getWindowHandles();
+		currentwindowHandles.removeAll(originalwindowHandles);
+
+		currentwindowHandles.stream().findFirst().ifPresent(s -> System.out.println(s));
+
+		for (String string : currentwindowHandles) {
+			wd.switchTo().window(string);
+			originalwindowHandles.add(string);
+		}
+	}
+
+	@AfterMethod
+	public void tearDown() {
+
+		wd.quit();
+	}
+
+}
