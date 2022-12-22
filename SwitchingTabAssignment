@@ -1,0 +1,89 @@
+package com.sanilassignments;
+
+import java.time.Duration;
+import java.util.Set;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
+
+public class SwitchingTabAssignment {
+
+	public class webPurchase {
+		WebDriver wd;
+		WebDriverWait wdWait;
+
+		@BeforeMethod
+		public void setUp() {
+
+			System.setProperty("webdriver.chrome.driver", "/home/sanil/Desktop/chromedriver");
+			wd = new ChromeDriver();
+			wdWait = new WebDriverWait(wd, Duration.ofSeconds(10));
+			wd.get("http://seleniumpractise.blogspot.com/2017/07/multiple-window-examples.html");
+
+		}
+
+		@Test
+		public void verifyLoginTest() throws InterruptedException {
+			SoftAssert sf = new SoftAssert();
+			Set<String> originalWindowHandles = wd.getWindowHandles();
+			Set<String> currentWindowHandles = null;
+			WebElement textField = wd.findElement(By.cssSelector("h3.post-title.entry-title"));
+			sf.assertEquals(textField.getText(), "Multiple window examples", "Text does not match");
+			String parentWindowHandle = wd.getWindowHandle();
+			originalWindowHandles.add(parentWindowHandle);
+			System.out.println("Parent window handle" + parentWindowHandle);
+			// ----Google window--------
+			wd.findElement(By.cssSelector("div.post-body.entry-content>a:nth-of-type(1)")).click();
+			;
+			windowHandling(currentWindowHandles, originalWindowHandles);
+			sf.assertEquals(wd.getTitle(), "Google", "User is not signed in");
+
+			wd.switchTo().window(parentWindowHandle);
+			// ----Facebook window-----------------------------------------
+			wd.findElement(By.cssSelector("div.post-body.entry-content>a:nth-of-type(2)")).click();
+			windowHandling(currentWindowHandles, originalWindowHandles);
+			sf.assertEquals(wd.getTitle(), "Facebook – log in or sign up", "User is not signed in");
+			wd.switchTo().window(parentWindowHandle);
+
+			// ----Yahoo window--------
+			wd.findElement(By.cssSelector("div.post-body.entry-content>a:nth-of-type(3)")).click();
+			wdWait.until(ExpectedConditions.visibilityOf(wd.findElement(By.cssSelector("div.post-body.entry-content>a:nth-of-type(3)"))));
+			windowHandling(currentWindowHandles, originalWindowHandles);
+			sf.assertEquals(wd.getTitle(),
+					"Yahoo | Mail, Weather, Search, News, Finance, Sports, Shopping, Entertainment, Video",
+					"User is not signed in");
+			wd.switchTo().window(parentWindowHandle);
+
+			// ----Final Facebook window--------
+			wd.findElement(By.cssSelector("div.post-body.entry-content>a:nth-of-type(4)")).click();
+			sf.assertEquals(wd.getTitle(), "Facebook – log in or sign up", "User is not signed in");
+			sf.assertAll();
+
+		}
+
+		public void windowHandling(Set<String> currentwindowHandles, Set<String> originalwindowHandles) {
+
+			currentwindowHandles = wd.getWindowHandles();
+			currentwindowHandles.removeAll(originalwindowHandles);
+
+			for (String string : currentwindowHandles) {
+				wd.switchTo().window(string);
+				originalwindowHandles.add(string);
+			}
+		}
+
+		@AfterMethod
+		public void tearDown() {
+
+			wd.quit();
+		}
+
+	}
+}
