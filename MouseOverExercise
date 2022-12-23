@@ -2,6 +2,7 @@ package com.sanilassignments;
 
 import java.time.Duration;
 import java.util.Set;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -30,7 +31,7 @@ public class MouseOverExercise {
 	}
 
 	@Test
-	public void verifyLoginTest() throws InterruptedException {
+	public void verifyLoginTest() {
 		SoftAssert sf = new SoftAssert();
 		Set<String> originalWindowHandles = wd.getWindowHandles();
 		Set<String> currentWindowHandles = null;
@@ -42,12 +43,9 @@ public class MouseOverExercise {
 		WebElement appiumLink = wd.findElement(By.cssSelector("div.dropdown-content>a:last-of-type"));
 		action.moveToElement(automationToolButton).build().perform();
 		action.moveToElement(seleniumLink).click().build().perform();
-		Set<String> allWindowHandles = wd.getWindowHandles();
-
 		windowHandling(currentWindowHandles, originalWindowHandles);
 		sf.assertEquals(wd.getTitle(), "Selenium Webdriver Tutorial - Selenium Tutorial for Beginners",
 				"User is not signed in");
-		Set<String> newallWindowHandles = wd.getWindowHandles();
 		wd.switchTo().window(parentWindowHandle);
 		wdWait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.dropbtn")));
 		action.moveToElement(automationToolButton).build().perform();
@@ -55,7 +53,7 @@ public class MouseOverExercise {
 		sf.assertEquals(wd.getTitle(), "TestNG Tutorials for Selenium Webdriver with Real Time Examples",
 				"User is not signed in");
 		wd.navigate().back();
-		Thread.sleep(2000);
+
 		wdWait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button.dropbtn")));
 		action.moveToElement(automationToolButton).build().perform();
 		action.moveToElement(appiumLink).click().build().perform();
@@ -65,17 +63,13 @@ public class MouseOverExercise {
 
 	}
 
-	public void windowHandling(Set<String> currentwindowHandles, Set<String> originalwindowHandles) {
+	public void windowHandling(Set<String> currentWindowHandles, Set<String> originalWindowHandles) {
 
-		currentwindowHandles = wd.getWindowHandles();
-		currentwindowHandles.removeAll(originalwindowHandles);
+		currentWindowHandles = wd.getWindowHandles();
+		currentWindowHandles.removeAll(originalWindowHandles);
+		wd.switchTo().window(currentWindowHandles.stream().filter(h -> h.length() > 0).findFirst().orElse(""));
+		originalWindowHandles.add(currentWindowHandles.stream().filter(h -> h.length() > 0).findFirst().orElse(""));
 
-		currentwindowHandles.stream().findFirst().ifPresent(s -> System.out.println(s));
-
-		for (String string : currentwindowHandles) {
-			wd.switchTo().window(string);
-			originalwindowHandles.add(string);
-		}
 	}
 
 	@AfterMethod
