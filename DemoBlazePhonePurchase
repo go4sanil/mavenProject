@@ -1,6 +1,8 @@
 package com.sanilassignments;
 
 import java.time.Duration;
+import java.util.List;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -30,7 +32,7 @@ public class DemoBlazePhonePurchase {
 	}
 
 	@Test
-	public void verifyLoginTest() throws InterruptedException {
+	public void verifyLoginTest()  {
 		SoftAssert sf = new SoftAssert();
 		// -----------------------------product selection-------------------------
 		wdWait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("#contcont div:nth-of-type(9) div div a")));
@@ -46,14 +48,17 @@ public class DemoBlazePhonePurchase {
 		sf.assertEquals(priceContainer.getText(), "$790 *includes tax", " Product Price does not match");
 
 		wd.findElement(By.cssSelector(".btn.btn-success.btn-lg")).click();
-		Thread.sleep(2000);
-		
+	 
+		wdWait.until(ExpectedConditions.alertIsPresent());
 		wd.switchTo().alert().accept();
-		Thread.sleep(2000);
+		 
 			
 		// -----------------------------click on cart-------------------------
 		
-		wd.findElement(By.cssSelector(".navbar-nav.ml-auto li:nth-of-type(4) a")).click();
+		//wd.findElement(By.cssSelector(".navbar-nav.ml-auto li:nth-of-type(4) a")).click();
+		List<WebElement> allElements = wd.findElements(By.cssSelector(".navbar-nav.ml-auto li:nth-of-type(4) a"));
+		WebElement desiredElement = allElements.stream().filter(s->s.getText().equals("Cart")).findAny().orElse(null);
+		desiredElement.click();
 		
 		// -----------------------------cart - Product Page-------------------------
 		
@@ -97,7 +102,7 @@ public class DemoBlazePhonePurchase {
 	@AfterMethod
 	public void tearDown() {
 
-		 wd.close();
+		// wd.close();
 	}
 
 	public void selectElementByVisibleText(WebElement element, String text) {
