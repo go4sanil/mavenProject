@@ -2,6 +2,7 @@ package com.sanilassignments;
 
 import java.time.Duration;
 import java.util.Set;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -30,7 +31,7 @@ public class SwitchingTabAssignment {
 		}
 
 		@Test
-		public void verifyLoginTest() throws InterruptedException {
+		public void verifyLoginTest() {
 			SoftAssert sf = new SoftAssert();
 			Set<String> originalWindowHandles = wd.getWindowHandles();
 			Set<String> currentWindowHandles = null;
@@ -68,15 +69,14 @@ public class SwitchingTabAssignment {
 
 		}
 
-		public void windowHandling(Set<String> currentwindowHandles, Set<String> originalwindowHandles) {
+		public void windowHandling(Set<String> currentWindowHandles, Set<String> originalWindowHandles) {
 
-			currentwindowHandles = wd.getWindowHandles();
-			currentwindowHandles.removeAll(originalwindowHandles);
-
-			for (String string : currentwindowHandles) {
-				wd.switchTo().window(string);
-				originalwindowHandles.add(string);
-			}
+			currentWindowHandles = wd.getWindowHandles();
+			currentWindowHandles.removeAll(originalWindowHandles);
+			wd.switchTo()
+					.window(currentWindowHandles.stream().filter(h -> h.length() > 0).findFirst().orElse(""));
+			originalWindowHandles
+					.add(currentWindowHandles.stream().filter(h -> h.length() > 0).findFirst().orElse(""));
 		}
 
 		@AfterMethod
